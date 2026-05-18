@@ -4,7 +4,7 @@
 
 The *purr*-fect way to hide secrets that can't even be *paw*-ven to exist, because what vault? There is no vault. It's just random bytes, nya~
 
-![version](https://img.shields.io/badge/version-0.2.0-ff69b4) ![Argon2id](https://img.shields.io/badge/KDF-Argon2id-b482ff) ![AES-256-GCM](https://img.shields.io/badge/cipher-AES--256--GCM-ff82c8) ![Meow Rating](https://img.shields.io/badge/meow%20rating-nya%2F10-ff69b4) ![uwu factor](https://img.shields.io/badge/uwu%20factor-extremely%20high-b482ff)
+[![CI](https://github.com/lulinretrograde/pawcrypt/actions/workflows/ci.yml/badge.svg)](https://github.com/lulinretrograde/pawcrypt/actions/workflows/ci.yml) [![license](https://img.shields.io/github/license/lulinretrograde/pawcrypt?color=ff82c8)](LICENSE) ![Argon2id](https://img.shields.io/badge/KDF-Argon2id-b482ff) ![AES-256-GCM](https://img.shields.io/badge/cipher-AES--256--GCM-ff82c8) ![Meow Rating](https://img.shields.io/badge/meow%20rating-nya%2F10-ff69b4) ![uwu factor](https://img.shields.io/badge/uwu%20factor-extremely%20high-b482ff)
 
 > [!IMPORTANT]
 > This is *real cryptography* with a *real security guarantee*, not just aesthetic. The deniability is **cryptographic**, not theatrical. Two independent AES-256-GCM volumes, zero common headers, zero magic bytes. An adversary with your vault file and no password cannot prove a second volume exists. pinky promise 🩷
