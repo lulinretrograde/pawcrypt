@@ -1,10 +1,10 @@
 // LSB steganography: hide a .paw vault inside a PNG.
 //
 // Layout (1 bit per raw RGBA byte, LSB-first within each payload byte):
-//   bytes 0..4   — magic "PAW\x01"
-//   bytes 4..8   — vault length as u32 LE
-//   bytes 8..    — vault data
+//   bytes 0..4   — vault length as u32 LE
+//   bytes 4..    — vault data
 //
+// No magic bytes: invalid data is caught by vault AES-GCM authentication at open time.
 // Capacity: floor(width * height * 4 / 8) bytes.
 // Visual change per pixel: ±1 in one channel — imperceptible.
 
@@ -12,8 +12,7 @@ use anyhow::{bail, Result};
 use image::RgbaImage;
 use std::path::Path;
 
-const MAGIC: &[u8; 4] = b"PAW\x01";
-const HEADER_LEN: usize = MAGIC.len() + 4; // magic + u32
+const HEADER_LEN: usize = 4; // u32 LE vault length
 
 pub fn hide(vault_bytes: &[u8], img_path: &Path, out_path: &Path) -> Result<()> {
     let img = image::open(img_path)?;
@@ -35,7 +34,6 @@ pub fn hide(vault_bytes: &[u8], img_path: &Path, out_path: &Path) -> Result<()> 
     }
 
     let mut payload = Vec::with_capacity(total);
-    payload.extend_from_slice(MAGIC);
     payload.extend_from_slice(&vault_len.to_le_bytes());
     payload.extend_from_slice(vault_bytes);
 
@@ -59,8 +57,9 @@ pub fn extract(img_path: &Path) -> Result<Vec<u8>> {
     let buf: RgbaImage = img.to_rgba8();
 
     let lsbs: Vec<u8> = buf.iter().map(|&b| b & 1).collect();
+    let capacity = lsbs.len() / 8;
 
-    if lsbs.len() < HEADER_LEN * 8 {
+    if capacity < HEADER_LEN {
         bail!("image too small to contain a vault");
     }
 
@@ -69,17 +68,11 @@ pub fn extract(img_path: &Path) -> Result<Vec<u8>> {
         (0..8usize).fold(0u8, |acc, i| acc | (lsbs[start + i] << i))
     };
 
-    for (i, &m) in MAGIC.iter().enumerate() {
-        if read_byte(i) != m {
-            bail!("no pawcrypt vault found in this image >:3");
-        }
-    }
-
-    let len_bytes: [u8; 4] = std::array::from_fn(|i| read_byte(MAGIC.len() + i));
+    let len_bytes: [u8; 4] = std::array::from_fn(|i| read_byte(i));
     let vault_len = u32::from_le_bytes(len_bytes) as usize;
 
-    if lsbs.len() < (HEADER_LEN + vault_len) * 8 {
-        bail!("image data truncated — vault may be corrupted");
+    if vault_len + HEADER_LEN > capacity {
+        bail!("image does not contain a pawcrypt vault");
     }
 
     Ok((0..vault_len)
@@ -113,8 +106,9 @@ mod tests {
 
     #[test]
     fn wrong_image_fails() {
+        // 1x1 image: 4 raw bytes, capacity = 0 — too small for 4-byte header
         let img_path = std::path::PathBuf::from("/tmp/stego_blank.png");
-        make_test_png(&img_path, 50, 50);
+        make_test_png(&img_path, 1, 1);
         assert!(extract(&img_path).is_err());
         std::fs::remove_file(&img_path).ok();
     }

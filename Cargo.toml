@@ -1,6 +1,6 @@
 [package]
 name = "pawcrypt"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "Deniable encryption CLI with dual-volume AES-256-GCM and Argon2id"
 license = "MIT"

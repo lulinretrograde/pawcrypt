@@ -1,6 +1,7 @@
 use indicatif::{ProgressBar, ProgressStyle};
 use owo_colors::OwoColorize;
 use std::time::Duration;
+use zeroize::Zeroizing;
 
 const CAT_ART: &str = r#"
   /\_____/\
@@ -17,7 +18,7 @@ pub fn print_banner() {
     println!(
         "{}  {}",
         "pawcrypt".truecolor(255, 105, 180).bold(),
-        "v0.2.0 — deniable encryption owo~".truecolor(180, 130, 255)
+        format!("{} — deniable encryption owo~", env!("CARGO_PKG_VERSION")).truecolor(180, 130, 255)
     );
     println!();
 }
@@ -103,17 +104,17 @@ pub fn msg_ok(text: &str) {
     );
 }
 
-pub fn prompt_password(label: &str) -> anyhow::Result<Vec<u8>> {
+pub fn prompt_password(label: &str) -> anyhow::Result<Zeroizing<Vec<u8>>> {
     let prompt = format!(
         "{} {}: ",
         ">>".truecolor(255, 105, 180).bold(),
         label.truecolor(255, 182, 255)
     );
     let pw = rpassword::prompt_password(prompt)?;
-    Ok(pw.into_bytes())
+    Ok(Zeroizing::new(pw.into_bytes()))
 }
 
-pub fn prompt_password_confirm(label: &str) -> anyhow::Result<Vec<u8>> {
+pub fn prompt_password_confirm(label: &str) -> anyhow::Result<Zeroizing<Vec<u8>>> {
     let pw1 = prompt_password(label)?;
     let pw2 = prompt_password(&format!("{label} (confirm)"))?;
     if pw1 != pw2 {
