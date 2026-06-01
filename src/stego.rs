@@ -68,7 +68,7 @@ pub fn extract(img_path: &Path) -> Result<Vec<u8>> {
         (0..8usize).fold(0u8, |acc, i| acc | (lsbs[start + i] << i))
     };
 
-    let len_bytes: [u8; 4] = std::array::from_fn(|i| read_byte(i));
+    let len_bytes: [u8; 4] = std::array::from_fn(&read_byte);
     let vault_len = u32::from_le_bytes(len_bytes) as usize;
 
     if vault_len + HEADER_LEN > capacity {
